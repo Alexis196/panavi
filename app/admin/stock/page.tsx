@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -43,6 +43,12 @@ export default function StockPage() {
     setSaving(false)
   }
 
+  const abrirModal = (producto: Producto, tipo: 'entrada' | 'salida') => {
+    setModal({ producto, tipo })
+    setCantidad(1)
+    setMotivo('')
+  }
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-[#3E3124] mb-6">Gestión de stock</h1>
@@ -51,7 +57,57 @@ export default function StockPage() {
         <Loader />
       ) : (
         <div className="bg-white rounded-2xl border border-[#DDD0B0] overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Mobile cards */}
+          <div className="md:hidden divide-y divide-[#DDD0B0]">
+            {productos.map((p) => {
+              const critico = p.stock_actual <= p.stock_minimo
+              return (
+                <div key={p.id} className={`p-4 ${critico ? 'bg-orange-50' : ''}`}>
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-2 min-w-0">
+                      {critico && <AlertTriangle className="w-4 h-4 text-orange-500 shrink-0" />}
+                      <div className="min-w-0">
+                        <p className="font-medium text-[#3E3124] truncate">{p.nombre}</p>
+                        <p className="text-xs text-[#8A7660]">{p.categoria}</p>
+                      </div>
+                    </div>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium shrink-0 ml-2 ${
+                      critico ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'
+                    }`}>
+                      {critico ? 'Crítico' : 'OK'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4 text-sm">
+                      <span className="text-[#8A7660]">
+                        Stock: <span className={`font-bold ${critico ? 'text-orange-600' : 'text-[#3E3124]'}`}>{p.stock_actual}</span>
+                      </span>
+                      <span className="text-[#8A7660]">Mín: {p.stock_minimo}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => abrirModal(p, 'entrada')}
+                        className="flex items-center gap-1 px-2.5 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg text-xs font-medium transition-colors"
+                      >
+                        <Plus className="w-3 h-3" />
+                        Entrada
+                      </button>
+                      <button
+                        onClick={() => abrirModal(p, 'salida')}
+                        className="flex items-center gap-1 px-2.5 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-medium transition-colors"
+                      >
+                        <Minus className="w-3 h-3" />
+                        Salida
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-[#E7D7B1] text-[#3E3124]">
                 <tr>
@@ -91,14 +147,14 @@ export default function StockPage() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2 justify-center">
                           <button
-                            onClick={() => { setModal({ producto: p, tipo: 'entrada' }); setCantidad(1); setMotivo('') }}
+                            onClick={() => abrirModal(p, 'entrada')}
                             className="flex items-center gap-1 px-2.5 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg text-xs font-medium transition-colors"
                           >
                             <Plus className="w-3 h-3" />
                             Entrada
                           </button>
                           <button
-                            onClick={() => { setModal({ producto: p, tipo: 'salida' }); setCantidad(1); setMotivo('') }}
+                            onClick={() => abrirModal(p, 'salida')}
                             className="flex items-center gap-1 px-2.5 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-medium transition-colors"
                           >
                             <Minus className="w-3 h-3" />

@@ -114,18 +114,18 @@ export default function ClientesPage() {
 
             return (
               <div key={cliente.id} className="bg-white rounded-2xl border border-[#DDD0B0] overflow-hidden">
-                <div className="flex items-center justify-between px-5 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-[#E7D7B1] rounded-full w-10 h-10 flex items-center justify-center font-bold text-[#C97B4B]">
+                <div className="flex items-center justify-between px-5 py-4 gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="bg-[#E7D7B1] rounded-full w-10 h-10 flex items-center justify-center font-bold text-[#C97B4B] shrink-0">
                       {cliente.full_name.charAt(0).toUpperCase()}
                     </div>
-                    <div>
-                      <p className="font-semibold text-[#3E3124]">{cliente.full_name}</p>
-                      <p className="text-xs text-[#8A7660]">{cliente.phone ?? 'Sin teléfono'}</p>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-[#3E3124] truncate">{cliente.full_name}</p>
+                      <p className="text-xs text-[#8A7660] truncate">{cliente.phone ?? 'Sin teléfono'}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 shrink-0">
                     <div className="text-right">
                       <p className={`font-bold text-lg ${saldo >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {saldo >= 0 ? '+' : ''} ${Math.abs(saldo).toLocaleString('es-AR')}

@@ -45,16 +45,16 @@ export default async function PedidosPage() {
         <div className="space-y-4">
           {(pedidos ?? []).map((pedido) => (
             <div key={pedido.id} className="bg-white rounded-2xl border border-[#DDD0B0] overflow-hidden">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-[#DDD0B0]">
-                <div>
+              <div className="flex items-start justify-between px-6 py-4 border-b border-[#DDD0B0] gap-3">
+                <div className="min-w-0">
                   <p className="font-semibold text-[#3E3124]">
                     Pedido #{pedido.id.slice(0, 8).toUpperCase()}
                   </p>
-                  <p className="text-sm text-[#8A7660]">
+                  <p className="text-sm text-[#8A7660] truncate">
                     {format(new Date(pedido.fecha), "EEEE d 'de' MMMM yyyy", { locale: es })}
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 shrink-0">
                   <span className="font-bold text-[#3E3124]">
                     ${pedido.total.toLocaleString('es-AR')}
                   </span>

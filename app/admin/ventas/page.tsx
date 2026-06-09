@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -45,13 +45,28 @@ export default function VentasPage() {
     fetchPedidos()
   }
 
+  const EstadoSelect = ({ pedido }: { pedido: any }) => (
+    <div className="relative inline-block">
+      <select
+        value={pedido.estado}
+        onChange={(e) => updateEstado(pedido.id, e.target.value)}
+        className="appearance-none bg-[#E7D7B1] text-[#3E3124] text-xs px-3 py-1.5 pr-7 rounded-lg border border-[#DDD0B0] focus:outline-none focus:border-[#C97B4B] cursor-pointer"
+      >
+        {ESTADOS.filter(e => e !== 'todos').map((e) => (
+          <option key={e} value={e} className="capitalize">{e}</option>
+        ))}
+      </select>
+      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-[#8A7660] pointer-events-none" />
+    </div>
+  )
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
         <h1 className="text-2xl font-bold text-[#3E3124]">Ventas y pedidos</h1>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-[#C97B4B] hover:bg-[#A5623C] text-[#FFFDF8] px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+          className="flex items-center gap-2 bg-[#C97B4B] hover:bg-[#A5623C] text-[#FFFDF8] px-4 py-2 rounded-xl text-sm font-medium transition-colors self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
           Nuevo pedido
@@ -75,64 +90,79 @@ export default function VentasPage() {
         ))}
       </div>
 
-      {/* Tabla */}
       <div className="bg-white rounded-2xl border border-[#DDD0B0] overflow-hidden">
         {loading ? (
           <Loader />
         ) : pedidos.length === 0 ? (
           <div className="p-12 text-center text-[#8A7660]">No hay pedidos</div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-[#E7D7B1] text-[#3E3124]">
-                <tr>
-                  <th className="px-4 py-3 text-left font-semibold">ID</th>
-                  <th className="px-4 py-3 text-left font-semibold">Cliente</th>
-                  <th className="px-4 py-3 text-left font-semibold">Fecha</th>
-                  <th className="px-4 py-3 text-right font-semibold">Total</th>
-                  <th className="px-4 py-3 text-left font-semibold">Estado</th>
-                  <th className="px-4 py-3 text-left font-semibold">Cambiar</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#DDD0B0]">
-                {pedidos.map((pedido) => (
-                  <tr key={pedido.id} className="hover:bg-[#F8F4EC]">
-                    <td className="px-4 py-3 text-[#8A7660] font-mono text-xs">
-                      #{pedido.id.slice(0, 8).toUpperCase()}
-                    </td>
-                    <td className="px-4 py-3 text-[#3E3124] font-medium">
-                      {pedido.profiles?.full_name ?? 'N/A'}
-                    </td>
-                    <td className="px-4 py-3 text-[#8A7660]">
-                      {format(new Date(pedido.fecha), "d MMM yyyy", { locale: es })}
-                    </td>
-                    <td className="px-4 py-3 text-right font-semibold text-[#3E3124]">
-                      ${Number(pedido.total).toLocaleString('es-AR')}
-                    </td>
-                    <td className="px-4 py-3">
+          <>
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-[#DDD0B0]">
+              {pedidos.map((pedido) => (
+                <div key={pedido.id} className="p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="min-w-0 mr-3">
+                      <p className="font-medium text-[#3E3124] truncate">{pedido.profiles?.full_name ?? 'N/A'}</p>
+                      <p className="text-xs text-[#8A7660] font-mono">#{pedido.id.slice(0, 8).toUpperCase()}</p>
+                    </div>
+                    <span className="font-bold text-[#3E3124] shrink-0">${Number(pedido.total).toLocaleString('es-AR')}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <span className="text-xs text-[#8A7660]">{format(new Date(pedido.fecha), "d MMM yyyy", { locale: es })}</span>
+                    <div className="flex items-center gap-2">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-medium capitalize ${ESTADO_COLORS[pedido.estado]}`}>
                         {pedido.estado}
                       </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="relative inline-block">
-                        <select
-                          value={pedido.estado}
-                          onChange={(e) => updateEstado(pedido.id, e.target.value)}
-                          className="appearance-none bg-[#E7D7B1] text-[#3E3124] text-xs px-3 py-1.5 pr-7 rounded-lg border border-[#DDD0B0] focus:outline-none focus:border-[#C97B4B] cursor-pointer"
-                        >
-                          {ESTADOS.filter(e => e !== 'todos').map((e) => (
-                            <option key={e} value={e} className="capitalize">{e}</option>
-                          ))}
-                        </select>
-                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-[#8A7660] pointer-events-none" />
-                      </div>
-                    </td>
+                      <EstadoSelect pedido={pedido} />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-[#E7D7B1] text-[#3E3124]">
+                  <tr>
+                    <th className="px-4 py-3 text-left font-semibold">ID</th>
+                    <th className="px-4 py-3 text-left font-semibold">Cliente</th>
+                    <th className="px-4 py-3 text-left font-semibold">Fecha</th>
+                    <th className="px-4 py-3 text-right font-semibold">Total</th>
+                    <th className="px-4 py-3 text-left font-semibold">Estado</th>
+                    <th className="px-4 py-3 text-left font-semibold">Cambiar</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-[#DDD0B0]">
+                  {pedidos.map((pedido) => (
+                    <tr key={pedido.id} className="hover:bg-[#F8F4EC]">
+                      <td className="px-4 py-3 text-[#8A7660] font-mono text-xs">
+                        #{pedido.id.slice(0, 8).toUpperCase()}
+                      </td>
+                      <td className="px-4 py-3 text-[#3E3124] font-medium">
+                        {pedido.profiles?.full_name ?? 'N/A'}
+                      </td>
+                      <td className="px-4 py-3 text-[#8A7660]">
+                        {format(new Date(pedido.fecha), "d MMM yyyy", { locale: es })}
+                      </td>
+                      <td className="px-4 py-3 text-right font-semibold text-[#3E3124]">
+                        ${Number(pedido.total).toLocaleString('es-AR')}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium capitalize ${ESTADO_COLORS[pedido.estado]}`}>
+                          {pedido.estado}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <EstadoSelect pedido={pedido} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 

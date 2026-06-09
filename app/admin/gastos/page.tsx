@@ -96,9 +96,9 @@ export default function GastosPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
         <h1 className="text-2xl font-bold text-[#3E3124]">Gastos / Egresos</h1>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button
             onClick={exportarExcel}
             disabled={gastos.length === 0}

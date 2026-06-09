@@ -134,14 +134,14 @@ export default async function AdminDashboard() {
         </div>
         <div className="divide-y divide-[#DDD0B0]">
           {(ultimosPedidos ?? []).map((pedido: any) => (
-            <div key={pedido.id} className="flex items-center justify-between px-6 py-3">
-              <div>
-                <p className="font-medium text-[#3E3124] text-sm">
+            <div key={pedido.id} className="flex items-center justify-between px-6 py-3 gap-3">
+              <div className="min-w-0">
+                <p className="font-medium text-[#3E3124] text-sm truncate">
                   {pedido.profiles?.full_name ?? 'Cliente'}
                 </p>
                 <p className="text-xs text-[#8A7660]">#{pedido.id.slice(0, 8).toUpperCase()}</p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 shrink-0">
                 <span className="font-semibold text-[#3E3124] text-sm">
                   ${Number(pedido.total).toLocaleString('es-AR')}
                 </span>

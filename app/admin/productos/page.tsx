@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import toast from 'react-hot-toast'
-import { Plus, Pencil, Trash2, X, Check, ImagePlus } from 'lucide-react'
+import { Plus, Pencil, Trash2, X, ImagePlus } from 'lucide-react'
 import { Producto } from '@/types/database'
 import { convertToWebp } from '@/lib/utils/convertToWebp'
 import Loader from '@/components/ui/Loader'
@@ -34,7 +34,7 @@ export default function ProductosAdminPage() {
   const [imgPreview, setImgPreview] = useState<string | null>(null)
   const [imgFile, setImgFile] = useState<File | null>(null)
 
-  const { register, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { activo: true, stock_actual: '0', stock_minimo: '5' },
   })
@@ -98,7 +98,6 @@ export default function ProductosAdminPage() {
 
   const onSubmit = async (data: FormData) => {
     const imagen_url = await uploadImage()
-
     const payload = {
       nombre: data.nombre,
       descripcion: data.descripcion || null,
@@ -109,7 +108,6 @@ export default function ProductosAdminPage() {
       activo: data.activo,
       imagen_url,
     }
-
     if (editando) {
       const { error } = await supabase.from('productos').update(payload).eq('id', editando.id)
       if (error) { toast.error('Error al actualizar'); return }
@@ -119,7 +117,6 @@ export default function ProductosAdminPage() {
       if (error) { toast.error('Error al crear'); return }
       toast.success('Producto creado')
     }
-
     setShowForm(false)
     setEditando(null)
     fetchProductos()
@@ -146,7 +143,8 @@ export default function ProductosAdminPage() {
           className="flex items-center gap-2 bg-[#C97B4B] hover:bg-[#A5623C] text-[#FFFDF8] px-4 py-2 rounded-xl text-sm font-medium transition-colors"
         >
           <Plus className="w-4 h-4" />
-          Nuevo producto
+          <span className="hidden sm:inline">Nuevo producto</span>
+          <span className="sm:hidden">Nuevo</span>
         </button>
       </div>
 
@@ -162,9 +160,8 @@ export default function ProductosAdminPage() {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
-              {/* Imagen */}
               <div className="flex items-center gap-4">
-                <div className="w-24 h-24 bg-[#E7D7B1] rounded-xl flex items-center justify-center overflow-hidden">
+                <div className="w-24 h-24 bg-[#E7D7B1] rounded-xl flex items-center justify-center overflow-hidden shrink-0">
                   {imgPreview ? (
                     <img src={imgPreview} alt="preview" className="w-full h-full object-cover" />
                   ) : (
@@ -234,12 +231,61 @@ export default function ProductosAdminPage() {
         </div>
       )}
 
-      {/* Tabla */}
       {loading ? (
         <Loader />
       ) : (
         <div className="bg-white rounded-2xl border border-[#DDD0B0] overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Mobile cards */}
+          <div className="md:hidden divide-y divide-[#DDD0B0]">
+            {productos.map((p) => (
+              <div key={p.id} className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-12 h-12 bg-[#E7D7B1] rounded-xl flex items-center justify-center overflow-hidden shrink-0">
+                    {p.imagen_url ? (
+                      <img src={p.imagen_url} alt={p.nombre} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-xl">🥖</span>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="font-medium text-[#3E3124] truncate">{p.nombre}</p>
+                      <span className="font-semibold text-[#3E3124] shrink-0">${p.precio.toLocaleString('es-AR')}</span>
+                    </div>
+                    <p className="text-xs text-[#8A7660] mt-0.5">{p.categoria}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => toggleActivo(p)}
+                          className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                            p.activo
+                              ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                        >
+                          {p.activo ? 'Activo' : 'Inactivo'}
+                        </button>
+                        <span className={`text-xs font-medium ${p.stock_actual <= p.stock_minimo ? 'text-orange-600' : 'text-[#8A7660]'}`}>
+                          Stock: {p.stock_actual}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => openEditar(p)} className="p-1.5 text-[#C97B4B] hover:bg-[#E7D7B1] rounded-lg transition-colors">
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => eliminar(p.id)} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-[#E7D7B1] text-[#3E3124]">
                 <tr>
@@ -286,16 +332,10 @@ export default function ProductosAdminPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => openEditar(p)}
-                          className="p-1.5 text-[#C97B4B] hover:bg-[#E7D7B1] rounded-lg transition-colors"
-                        >
+                        <button onClick={() => openEditar(p)} className="p-1.5 text-[#C97B4B] hover:bg-[#E7D7B1] rounded-lg transition-colors">
                           <Pencil className="w-4 h-4" />
                         </button>
-                        <button
-                          onClick={() => eliminar(p.id)}
-                          className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                        >
+                        <button onClick={() => eliminar(p.id)} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
