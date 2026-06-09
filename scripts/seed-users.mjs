@@ -11,7 +11,7 @@ if (!SERVICE_ROLE_KEY) {
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false }
 })
- console.log("hola")
+
 const users = [
   { email: 'admin@panavi.com',    password: 'panavi123', full_name: 'Admin Panavi',   role: 'admin' },
   { email: 'cliente@panavi.com',  password: 'panavi123', full_name: 'Cliente Demo',   role: 'cliente' },
